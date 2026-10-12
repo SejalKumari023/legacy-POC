@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import type { PythonValidation } from "@/lib/python-validation";
 
 export type RunEvent = { at: string; stage: string; message: string; status: "pending" | "running" | "passed" | "failed" };
 export type Run = {
@@ -9,7 +10,7 @@ export type Run = {
   status: "awaiting_agent" | "running" | "awaiting_result" | "completed" | "failed"; events: RunEvent[];
   branch?: string; pullRequestUrl?: string; createdAt: string; updatedAt: string;
   noChanges?: boolean;
-  result?: { functionalChanges: string[]; technicalChanges: string[]; verification: string[]; limitations: string[] };
+  result?: { functionalChanges: string[]; technicalChanges: string[]; verification: string[]; limitations: string[]; pythonValidation?: PythonValidation };
 };
 
 const file = () => process.env.RUN_STORE_PATH ?? path.join(process.cwd(), ".runtime", "verimodern-runs.json");

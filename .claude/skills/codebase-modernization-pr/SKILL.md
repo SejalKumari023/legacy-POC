@@ -56,12 +56,20 @@ The only remote code change this skill may create is a branch and pull request i
    - Update authoritative build, wrapper, container, CI, and dependency declarations only where required by the requested target or a verified incompatibility.
    - For each selected language, verify the target using that language's authoritative toolchain and runtime contract. In the Java 8 to Java 21 case study, use the build tool's release/API contract rather than relying solely on the sandbox's default JDK; check `maven.compiler.release=21`, clean tests, and class major version 65 when classes are produced.
 
+### Python 3.8 to 3.12 case-study gate
+
+For this path, do not equate a changed `requires-python` declaration with a validated migration. Record actual `python3.8 --version` and `python3.12 --version` output in Daytona. Run the existing tests and deterministic behavior cases on the untouched 3.8 checkout, then run the same cases on the transformed 3.12 checkout. Compare values and exception types/messages. If either runtime, test suite, or behavior comparison is missing or failing, stop before the PR and report the limitation.
+
+The repository's `samples/python-3.8-ledger/` fixture includes `verify_migration.py`. For a run targeting that sample, use two separate checkouts and invoke the verifier with the sample directory in each checkout and the exact paths to both Python interpreters. It prints a JSON report and exits zero only when actual runtimes, tests, and captured behavior pass. Send that exact JSON under `pythonValidation` to the app's result callback **before** calling the PR callback; the app rejects a Python 3.12 PR without it. Do not add generated reports or the verifier's output to the transformation PR. This verifier is specific to the sample; it is not evidence that every Python repository can be migrated.
+
+Keep the sample's tests, behavior cases, and verifier unchanged in the migration branch. If a test itself is demonstrably wrong, stop and request review rather than weakening it to obtain a pass.
+
 4. Verify and submit.
    - Run the final clean build and relevant tests in the same sandbox.
    - Compare the branch with its default-branch base. Remove generated artifacts, secrets, credentials, and unrelated changes.
    - Confirm the diff respects the selected scope, except for documented minimal build/toolchain files. If it does not, stop and ask the user to widen the scope or approve the exception.
    - Push the branch and open a PR to the repository's default branch. The PR must contain only code, tests, build/configuration, and required dependency-lock changes; it must not contain HTML reports or other generated documentation.
-   - Send the complete functional, technical, verification, and limitation result to the web app. After both the PR and result callbacks succeed, stop only the sandbox created for this run. Record the stopped lifecycle state in the returned result.
+   - Send the complete functional, technical, verification, and limitation result to the web app. For a Python 3.8 to 3.12 run, send the passing structured verification result before requesting the PR. After both the PR and result callbacks succeed, stop only the sandbox created for this run. Record the stopped lifecycle state in the returned result.
    - If verification, push, PR creation, or result delivery fails, do not delete the sandbox. Leave it available only until its finite auto-stop interval elapses, report its ID and state, and explain the failure.
    - Never automatically delete a sandbox. Deletion, including cleanup of an old stopped sandbox, requires current user authorization.
 

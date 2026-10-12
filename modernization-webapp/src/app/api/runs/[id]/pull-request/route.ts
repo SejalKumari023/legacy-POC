@@ -7,6 +7,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const run = await getRun((await params).id);
   const body = await request.json() as { workerToken?: string; branch?: string; title?: string; body?: string };
   if (!run || !validWorkerToken(run, body.workerToken) || !body.branch || !body.title || !body.body) return NextResponse.json({ error: "Invalid pull request payload" }, { status: 401 });
+  if (run.targets.Python === "3.12" && !run.result?.pythonValidation?.passed) return NextResponse.json({ error: "Verified Python 3.8→3.12 evidence must arrive before the PR." }, { status: 422 });
   try {
     const repository = await assertRepositoryAccess(run.installationId, run.repositoryUrl);
     const pr = await createPullRequest(run.installationId, repository, { branch: body.branch, title: body.title, body: body.body });
