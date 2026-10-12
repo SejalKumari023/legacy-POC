@@ -80,6 +80,10 @@ Result callback:
 
 The app creates the PR against the repository default branch and streams the worker events to the browser with Server-Sent Events.
 
+## Python 3.8 to 3.12 case study
+
+The `samples/python-3.8-ledger/` fixture is deliberately incompatible with Python 3.12 until its removed `imp` loader is replaced. The fixture's `verify_migration.py` runs its tests and behavior cases in separate baseline and candidate checkouts using real Python 3.8 and 3.12 executables. It compares returned values and exception types/messages, then emits a JSON report. For a Python target of `3.12`, the controller must send that passing report as `pythonValidation` to the result endpoint before requesting a PR. The server rejects a missing or failing report. This is a case-study gate, not a general Python migration guarantee.
+
 ## Production runner boundary
 
 The local launcher is a simulation adapter only. In production, replace it with a queue-backed runner that creates a Daytona sandbox from a prepared snapshot, injects the one-run GitHub credential and Claude authentication only as short-lived process environment values, then runs Claude **inside** that sandbox. Stream normalized milestone events back to the same callbacks, revoke credentials, and delete the sandbox when the run reaches a terminal state. The browser contract and the GitHub App endpoints do not change.
