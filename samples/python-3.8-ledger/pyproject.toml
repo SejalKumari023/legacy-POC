@@ -1,0 +1,5 @@
+[project]
+name = "verimodern-legacy-ledger"
+version = "0.1.0"
+requires-python = ">=3.8,<3.9"
+description = "A small Python 3.8 legacy-code transformation case study"
